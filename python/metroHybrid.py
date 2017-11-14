@@ -14,7 +14,9 @@ import numpy as np
 import math
 from scipy import optimize
 
+offset = 30
 glueTarget = 80
+glueTarget -= offset
 ASICThickness = 300
 micronsPerTurn = 254                  # thread of screw in terms of microns per full turn
 
@@ -28,7 +30,7 @@ def main():
         inputfileHybrid = args[0]
         inputfileBridge = args[1]
         # calculate hybrid heights
-        hybrid_heights = calculate_hybrid_heights(1, inputfileHybrid.split(".")[-2][:-1])
+        hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:])
         # calculate bridgetool value
         bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
         glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
@@ -117,7 +119,21 @@ def calculate_hybrid_heights(nhybrids, base_file_name):
         #It depends on the hybrid metrology
         #h_thickness.append(z_pos)
         h_thickness.append(z_d)
-    hybrid_heights = np.mean(h_thickness)
+    hybrid_heights = np.mean(h_thickness,axis=0)
+    print_hybrid_heights(np.array(h_thickness), "before")
+
+    return hybrid_heights
+
+def calculate_hybrid_heights(base_file_name):
+    h_thickness=[]
+    file_name = base_file_name + '.txt'
+    z_pos,z_d=hybrid_value(file_name)
+    #It depends on the hybrid metrology
+    #h_thickness.append(z_pos)
+    h_thickness.append(z_d)
+    hybrid_heights = np.mean(h_thickness,axis=0)
+    print_hybrid_heights(hybrid_heights, "before")
+
     return hybrid_heights
 
 def calculate_glue_thickness(bridge_heights, hybrid_heights, name):
@@ -158,6 +174,12 @@ def print_residual(residual, name):
     print("Residual at PINS 2: " + np.array2string(residual[2],\
           formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("Residual at PINS 3: " + np.array2string(residual[3],\
+          formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
+    print("")
+
+def print_hybrid_heights(hybrid_heights, name):
+    print("-----------  Hybrid heights of " + str(name) + "---------------")
+    print("Hybrid heights: " + np.array2string(hybrid_heights,\
           formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("")
 
