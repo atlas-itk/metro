@@ -15,7 +15,7 @@ import math
 from scipy import optimize
 
 offset = 30
-glueTarget = 80
+glueTarget = 120
 glueTarget -= offset
 ASICThickness = 300
 micronsPerTurn = 254                  # thread of screw in terms of microns per full turn
@@ -108,7 +108,7 @@ def derive_plane_correction(points,param):
     return corrections
 
 def hybrid_corrections(glue_thickness):
-    thickness_corrections = np.mean(glue_thickness - glueTarget)
+    thickness_corrections = np.abs(np.mean(glue_thickness - glueTarget))
     return thickness_corrections
 
 def calculate_hybrid_heights(nhybrids, base_file_name):
