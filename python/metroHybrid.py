@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 """
 Hybrid Metrology for ATLAS ITk
@@ -14,11 +14,11 @@ import numpy as np
 import math
 from scipy import optimize
 
-offset = 30
-glueTarget = 80
-glueTarget += offset
-ASICThickness = 300
-micronsPerTurn = 254                  # thread of screw in terms of microns per full turn
+OFFSET = 30
+GLUE_TARGET = 80
+GLUE_TARGET += OFFSET
+ASIC_THICKNESS = 300
+MICRONS_PER_TURN = 254                  # thread of screw in terms of microns per full turn
 
 def main():
     args = sys.argv[1:]
@@ -26,44 +26,39 @@ def main():
         return usage()
     elif len(args) == 1:
         return usage()
-    elif len(args) == 2:
+    elif len(args) ==2:
+        inputfileHybrid = args[0]
+        inputfileBridge = args[1]
         hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
         # calculate bridgetool value
-        bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
-        glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
-        plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
-    elif len(args) <4:
-        option = args[0]
-        inputfileHybrid = args[1]
-        inputfileBridge = args[2]
-        if option=="-Z":
-            # calculate hybrid heights with z
+        if len(hybrid_heights) == 0: 
             hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "Z")
-        elif option == "-ZD":
-            # calculate hybrid heights with zd
-            hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
-        else:
-            print("Please check the command input")
-            usage()
 
-    # calculate bridgetool value
-    bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
-    glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
-    plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
+        bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
+        glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points,
+                                                     bridgetool_pad_points, hybrid_heights)
+        plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
+        input("Please press enter here to close:")
+
 
 def usage():
     sys.stdout.write('''
-                     NAME
-                     metroHybrid.py
-                     SYNOPSIS
-                     metroHybrid.py inputHybridData.txt inputBridgeToolData.txt
+NAME
+    metroHybrid.py
 
-                     AUTHOR
-                     Liejian <chenlj@ihep.ac.cn>.
+SYNOPSIS
+    ./metroHybrid.py inputHybridData.txt inputBridgeToolData.txt
 
-                     DATE
-                     September 2017
-                     \n''')
+EXAMPLES
+    ./metroHybrid.py example/panel_102_170808_h0.txt example/set_11_laser_20171114.txt 
+                     
+AUTHOR
+    Liejian <chenlj@ihep.ac.cn>.
+
+DATE
+    September 2017
+\n''')
+    
 
 def csv_reader(filename):
     with open(filename) as f:
@@ -90,6 +85,8 @@ def csv_reader(filename):
 
 def hybrid_value(filename):
     x,y,z,zd=csv_reader(filename)
+    print("hybrid value zd:"+str(zd))
+    print("hybrid value z: "+str(z))
     return z,zd
 
 def bridgetool_value(filename):
@@ -109,6 +106,7 @@ def fitPlaneToPoints(points):
     parCov = fitRes[1]
     return [parFit[0],parFit[1],parFit[2]]
 
+
 def derive_plane_correction(points,param):
     # use first point as pivot and correct plane definition
     points=np.array(points).T
@@ -123,8 +121,9 @@ def derive_plane_correction(points,param):
         return corrections
 
 def hybrid_corrections(glue_thickness):
-    thickness_corrections = np.mean(glueTarget-glue_thickness)
+    thickness_corrections = np.mean(GLUE_TARGET-glue_thickness)
     return thickness_corrections
+
 
 def calculate_hybrid_heights(nhybrids, base_file_name):
     h_thickness=[]
@@ -139,12 +138,16 @@ def calculate_hybrid_heights(nhybrids, base_file_name):
 
     return hybrid_heights
 
+
 def calculate_hybrid_heights(base_file_name, zoption):
     h_thickness=[]
     file_name = base_file_name + '.txt'
     z_pos,z_d=hybrid_value(file_name)
+    print('Read Z pos: '+str(np.abs(z_pos)))
+    print('Read ZD pos: '+str(np.abs(z_d)))
     #It depends on the hybrid metrology
     if zoption == "Z":
+        print('Read Z pos: '+str(np.abs(z_pos)))
         h_thickness.append(np.abs(z_pos))
     elif zoption == "ZD":
         h_thickness.append(z_d)
@@ -155,7 +158,7 @@ def calculate_hybrid_heights(base_file_name, zoption):
     return hybrid_heights
 
 def calculate_glue_thickness(bridge_heights, hybrid_heights, name):
-    glue_thickness = bridge_heights + hybrid_heights - ASICThickness
+    glue_thickness = bridge_heights + hybrid_heights - ASIC_THICKNESS
     print_glue_thickness(glue_thickness, name)
     return glue_thickness
 
@@ -169,8 +172,8 @@ def print_calibration(corrections,name):
             instructions = "PIN "+str(i)+"  =   "+"{:04.1f}".format(corrections[i]) + " um  =  "
             instructions += "  CLOCKWISE    "
 
-        instructions += "{:.2f}".format(math.fabs(corrections[i]/micronsPerTurn))+" turns"
-        instructions += " = {:.0f} degrees".format(math.fabs(corrections[i]/micronsPerTurn)*360)
+        instructions += "{:.2f}".format(math.fabs(corrections[i]/MICRONS_PER_TURN))+" turns"
+        instructions += " = {:.0f} degrees".format(math.fabs(corrections[i]/MICRONS_PER_TURN)*360)
         print(instructions)
         print("")
 
@@ -185,13 +188,13 @@ def makeResidualsHist(points, param, name):
 def print_residual(residual, name):
     print("-----------  Residuals of " + str(name) + "---------------")
     residual = np.reshape(residual, (4, int(len(residual)/4)))
-    print("Residual at PINS 0: " + np.array2string(residual[0],\
+    print("Residual at PINS 0: " + np.array2string(residual[0],
+                                                formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
+    print("Residual at PINS 1: " + np.array2string(residual[1],
                                                    formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
-    print("Residual at PINS 1: " + np.array2string(residual[1],\
+    print("Residual at PINS 2: " + np.array2string(residual[2],
                                                    formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
-    print("Residual at PINS 2: " + np.array2string(residual[2],\
-                                                   formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
-    print("Residual at PINS 3: " + np.array2string(residual[3],\
+    print("Residual at PINS 3: " + np.array2string(residual[3],
                                                    formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("")
 
@@ -200,6 +203,7 @@ def print_hybrid_heights(hybrid_heights, name):
     print("Hybrid heights: " + np.array2string(hybrid_heights,\
                                                formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("")
+    
 
 def print_bridge_heights(bridge_heights, name):
     print("-----------  Bridge heights of " + str(name) + "---------------")
@@ -207,12 +211,14 @@ def print_bridge_heights(bridge_heights, name):
                                                formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("")
 
+    
 def print_glue_thickness(glue_thickness, name):
     print("-----------  Glue thickness of " + str(name) + "---------------")
     print("Glue thickness: " + np.array2string(glue_thickness,\
                                                formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("")
 
+    
 def calculateBridgeHeights(points,param,name):
     points=np.array(points)
     param=np.array(param)
@@ -222,6 +228,7 @@ def calculateBridgeHeights(points,param,name):
     zmean=np.mean(zmean,axis=0)
     print_bridge_heights(zmean,name)
     return zmean
+
 
 def run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights):
     # fit plane to touchdown and get residuals
@@ -275,6 +282,7 @@ def run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
     return glue_thickness_predicted_before, glue_thickness_predicted_after, \
         bridge_heights_before, bridge_heights_after
 
+
 def plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef):
     fig=plt.figure(1,(10,7.5))
     plt.subplot(221)
@@ -297,7 +305,7 @@ def plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef):
     plt.ylim((280,380))
     plt.legend()
 
-    plt.show()
+    fig.show()
 
 if __name__ == '__main__':
     main()
