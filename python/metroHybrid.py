@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 """
 Hybrid Metrology for ATLAS ITk
@@ -26,13 +26,22 @@ def main():
         return usage()
     elif len(args) == 1:
         return usage()
-    elif len(args) == 2:
+    elif len(args) ==2:
+        print("here")
+        inputfileHybrid = args[0]
+        inputfileBridge = args[1]
         hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
         # calculate bridgetool value
+        print(hybrid_heights)
+        if len(hybrid_heights) == 0: 
+            hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "Z")
+            print('1 Have read Z pos: ', hybrid_heights)
+        print('2 Have read Z pos: ', hybrid_heights) 
+        #exit()
         bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
         glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
         plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
-    elif len(args) <4:
+    elif len(args) ==3:
         option = args[0]
         inputfileHybrid = args[1]
         inputfileBridge = args[2]
@@ -46,10 +55,10 @@ def main():
             print("Please check the command input")
             usage()
 
-    # calculate bridgetool value
-    bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
-    glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
-    plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
+        # calculate bridgetool value
+        bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
+        glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
+        plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
 
 def usage():
     sys.stdout.write('''
@@ -90,6 +99,8 @@ def csv_reader(filename):
 
 def hybrid_value(filename):
     x,y,z,zd=csv_reader(filename)
+    print("hybrid value zd:"+str(zd))
+    print("hybrid value z: "+str(z))
     return z,zd
 
 def bridgetool_value(filename):
@@ -126,6 +137,7 @@ def hybrid_corrections(glue_thickness):
     thickness_corrections = np.mean(glueTarget-glue_thickness)
     return thickness_corrections
 
+'''
 def calculate_hybrid_heights(nhybrids, base_file_name):
     h_thickness=[]
     for h in range(0, int(nhybrids)):
@@ -138,13 +150,17 @@ def calculate_hybrid_heights(nhybrids, base_file_name):
         print_hybrid_heights(np.array(h_thickness), "before")
 
     return hybrid_heights
+'''
 
 def calculate_hybrid_heights(base_file_name, zoption):
     h_thickness=[]
     file_name = base_file_name + '.txt'
     z_pos,z_d=hybrid_value(file_name)
+    print('Read Z pos: '+str(np.abs(z_pos)))
+    print('Read ZD pos: '+str(np.abs(z_d)))
     #It depends on the hybrid metrology
     if zoption == "Z":
+        print('Read Z pos: '+str(np.abs(z_pos)))
         h_thickness.append(np.abs(z_pos))
     elif zoption == "ZD":
         h_thickness.append(z_d)
