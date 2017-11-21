@@ -16,7 +16,7 @@ from scipy import optimize
 
 offset = 30
 glueTarget = 80
-glueTarget -= offset
+#glueTarget -= offset
 ASICThickness = 300
 micronsPerTurn = 254                  # thread of screw in terms of microns per full turn
 
@@ -26,11 +26,25 @@ def main():
         return usage()
     elif len(args) == 1:
         return usage()
-    elif len(args) <3:
-        inputfileHybrid = args[0]
-        inputfileBridge = args[1]
-        # calculate hybrid heights
-        hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:])
+    elif len(args) == 2:
+        hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
+        # calculate bridgetool value
+        bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
+        glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
+        plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
+    elif len(args) <4:
+	option = args[0]
+        inputfileHybrid = args[1]
+	inputfileBridge = args[2]
+	if option=="-Z":
+          # calculate hybrid heights with z
+          hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "Z")
+	elif option == "-ZD":
+          # calculate hybrid heights with zd
+          hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
+	else:
+	   print("Please check the command input")
+	   usage()
         # calculate bridgetool value
         bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
         glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
@@ -117,20 +131,23 @@ def calculate_hybrid_heights(nhybrids, base_file_name):
         file_name = base_file_name + str(nhybrids) + '.txt'
         z_pos,z_d=hybrid_value(file_name)
         #It depends on the hybrid metrology
-        #h_thickness.append(z_pos)
-        h_thickness.append(z_d)
+        h_thickness.append(np.abs(z_pos))
+        #h_thickness.append(z_d)
     hybrid_heights = np.mean(h_thickness,axis=0)
     print_hybrid_heights(np.array(h_thickness), "before")
 
     return hybrid_heights
 
-def calculate_hybrid_heights(base_file_name):
+def calculate_hybrid_heights(base_file_name, zoption):
     h_thickness=[]
     file_name = base_file_name + '.txt'
     z_pos,z_d=hybrid_value(file_name)
     #It depends on the hybrid metrology
-    #h_thickness.append(z_pos)
-    h_thickness.append(z_d)
+    if zoption == "Z":
+        h_thickness.append(np.abs(z_pos))
+    elif zoption == "ZD":    
+	h_thickness.append(z_d)
+    
     hybrid_heights = np.mean(h_thickness,axis=0)
     print_hybrid_heights(hybrid_heights, "before")
 
@@ -237,7 +254,7 @@ def run_correction(bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
     glue_thickness_predicted_mid = calculate_glue_thickness(bridge_heights_mid, \
                                                         hybrid_heights, "mid-point")
 
-    corrections += hybrid_corrections(glue_thickness_predicted_mid)
+    corrections = hybrid_corrections(glue_thickness_predicted_mid)
     print_calibration(corrections, "Final corrections")
     bridge_pins_corrected=np.array([bridgetool_pin_points[0], \
                                     bridgetool_pin_points[1], \
@@ -261,22 +278,22 @@ def plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef):
     fig=plt.figure(1,(10,7.5))
     plt.subplot(221)
     plt.plot(glueb,label='glue thickness before')
-    plt.ylim((70,130))
+    plt.ylim((50,150))
     plt.legend()
 
     plt.subplot(222)
     plt.plot(gluef,label='glue thickness after')
-    plt.ylim((70,130))
+    plt.ylim((50,150))
     plt.legend()
 
     plt.subplot(223)
     plt.plot(bridgeb,label='bridge tool before')
-    plt.ylim((280,340))
+    plt.ylim((280,380))
     plt.legend()
 
     plt.subplot(224)
     plt.plot(bridgef,label='bridge tool after')
-    plt.ylim((280,340))
+    plt.ylim((280,380))
     plt.legend()
 
     plt.show()
