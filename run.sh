@@ -9,7 +9,8 @@ usage() {
     printf "\nSYNOPSIS\n"
     printf "\n\t%-5s\n" "./run.sh [OPTION]" 
     printf "\nOPTIONS\n" 
-printf "\n\t%-9s  %-40s" "20171123" " Yiming: 20171123" 
+    printf "\n\t%-9s  %-40s" "20170223" " Hybrid with distance"
+    printf "\n\t%-9s  %-40s" "20171123" " Yiming: 20171123" 
 
     printf "\n\n" 
 }
@@ -24,10 +25,10 @@ fi
 
 case $option in
     
-    # --------------------------------------------------------------------------
-    #  20171123 Yiming
-    # --------------------------------------------------------------------------
-
+    20170223) echo "Hybrid with distance"
+	./python/metroHybrid.py data/panel_VII_20170223_h2.txt data/set_11_laser_170116.txt
+	;;
+ 
     20171123) echo "Running on 20171123 Yiming"
 	./python/metroHybrid.py data/panel102_h2_20171123.TXT data/set_11_laser_171123.TXT 
 	;;
