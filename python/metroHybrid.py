@@ -293,7 +293,7 @@ def plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef):
     plt.legend()
 
     fig.show()
-    input('Please press enter here to close:')
+    raw_input('Please press enter here to close:')
     
     
 if __name__ == '__main__':
