@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
 
 """
 Hybrid Metrology for ATLAS ITk
@@ -29,16 +30,16 @@ def main():
     elif len(args) ==2:
         inputfileHybrid = args[0]
         inputfileBridge = args[1]
-        hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "ZD")
+        hybrid_heights = calculate_hybrid_heights(inputfileHybrid, "ZD")
         # calculate bridgetool value
         if len(hybrid_heights) == 0: 
-            hybrid_heights = calculate_hybrid_heights(inputfileHybrid.split(".")[-2][:], "Z")
+            hybrid_heights = calculate_hybrid_heights(inputfileHybrid, "Z")
 
         bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
-        glueb,gluef,bridgeb,bridgef = run_correction(bridgetool_pin_points,
-                                                     bridgetool_pad_points, hybrid_heights)
+        glueb,gluef,bridgeb,bridgef = run_correction(
+            bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
         plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
-        input("Please press enter here to close:")
+
 
 
 def usage():
@@ -53,7 +54,7 @@ EXAMPLES
     ./metroHybrid.py example/panel_102_170808_h0.txt example/set_11_laser_20171114.txt 
                      
 AUTHOR
-    Liejian <chenlj@ihep.ac.cn>.
+    Liejian <chenlj@ihep.ac.cn>. Reference Craig's ROOT based Code.
 
 DATE
     September 2017
@@ -125,23 +126,9 @@ def hybrid_corrections(glue_thickness):
     return thickness_corrections
 
 
-def calculate_hybrid_heights(nhybrids, base_file_name):
+
+def calculate_hybrid_heights(file_name, zoption):
     h_thickness=[]
-    for h in range(0, int(nhybrids)):
-        file_name = base_file_name + str(nhybrids) + '.txt'
-        z_pos,z_d=hybrid_value(file_name)
-        #It depends on the hybrid metrology
-        h_thickness.append(np.abs(z_pos))
-        #h_thickness.append(z_d)
-        hybrid_heights = np.mean(h_thickness,axis=0)
-        print_hybrid_heights(np.array(h_thickness), "before")
-
-    return hybrid_heights
-
-
-def calculate_hybrid_heights(base_file_name, zoption):
-    h_thickness=[]
-    file_name = base_file_name + '.txt'
     z_pos,z_d=hybrid_value(file_name)
     print('Read Z pos: '+str(np.abs(z_pos)))
     print('Read ZD pos: '+str(np.abs(z_d)))
@@ -189,7 +176,7 @@ def print_residual(residual, name):
     print("-----------  Residuals of " + str(name) + "---------------")
     residual = np.reshape(residual, (4, int(len(residual)/4)))
     print("Residual at PINS 0: " + np.array2string(residual[0],
-                                                formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
+                                                   formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("Residual at PINS 1: " + np.array2string(residual[1],
                                                    formatter={'float_kind':lambda x: "%3.2f" % x}) + " um")
     print("Residual at PINS 2: " + np.array2string(residual[2],
@@ -223,7 +210,7 @@ def calculateBridgeHeights(points,param,name):
     points=np.array(points)
     param=np.array(param)
     zmean = (param[0]*points[0]+param[1]*points[1]-points[2]+param[2]) \
-        / np.sqrt(param[0]*param[0]+param[1]*param[1]+1)
+            / np.sqrt(param[0]*param[0]+param[1]*param[1]+1)
     zmean=np.reshape(zmean,(4,10))
     zmean=np.mean(zmean,axis=0)
     print_bridge_heights(zmean,name)
@@ -306,6 +293,9 @@ def plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef):
     plt.legend()
 
     fig.show()
-
+    input('Please press enter here to close:')
+    
+    
 if __name__ == '__main__':
     main()
+
