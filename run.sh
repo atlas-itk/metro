@@ -10,7 +10,8 @@ usage() {
     printf "\n\t%-5s\n" "./run.sh [OPTION]" 
     printf "\nOPTIONS\n" 
     printf "\n\t%-9s  %-40s" "20170223" " Hybrid with distance"
-    printf "\n\t%-9s  %-40s" "20171123" " Yiming: 20171123" 
+    printf "\n\t%-9s  %-40s" "20171123P" " Yiming predicted: 20171123P" 
+    printf "\n\t%-9s  %-40s" "20171123M" " Yiming measured: 20171123M" 
 
     printf "\n\n" 
 }
@@ -29,8 +30,12 @@ case $option in
 	./python/metroHybrid.py data/panel_VII_20170223_h2.txt data/set_11_laser_170116.txt
 	;;
  
-    20171123) echo "Running on 20171123 Yiming"
+    20171123P) echo "Running on 20171123 Yiming: predicted glue thickness for adjustment"
 	./python/metroHybrid.py data/panel102_h2_20171123.TXT data/set_11_laser_171123.TXT 
+	;;
+    
+    20171123M) echo "Running on 20171123 Yiming: measured glue thickness"
+  ./python/metroHybrid.py data/panel102_h2_20171123.txt data/panel102_h2_20171123_withASICs.TXT data/set_11_laser_171123.TXT
 	;;
 
 esac
