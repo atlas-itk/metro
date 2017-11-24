@@ -12,6 +12,7 @@ usage() {
     printf "\n\t%-9s  %-40s" "20170223" " Hybrid with distance"
     printf "\n\t%-9s  %-40s" "20171123P" " Yiming predicted: 20171123P" 
     printf "\n\t%-9s  %-40s" "20171123M" " Yiming measured: 20171123M" 
+    printf "\n\t%-9s  %-40s" "20171124M" " Xin measured: 20171124M" 
 
     printf "\n\n" 
 }
@@ -36,6 +37,10 @@ case $option in
     
     20171123M) echo "Running on 20171123 Yiming: measured glue thickness"
   ./python/metroHybrid.py data/panel102_h2_20171123.txt data/panel102_h2_20171123_withASICs.TXT data/set_11_laser_171123.TXT
+	;;
+
+    20171124M) echo "Running on 20171124 Xin: measured glue thickness"
+  ./python/metroHybrid.py data/panel102_h5_20171124.TXT data/panel102_h5_20171124_withASICs.TXT data/set_11_laser_171123.TXT
 	;;
 
 esac
