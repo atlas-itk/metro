@@ -14,6 +14,8 @@ usage() {
     printf "\n\t%-9s  %-40s" "20171123M" " Yiming measured: 20171123M" 
     printf "\n\t%-9s  %-40s" "20171124M" " Xin measured: 20171124M" 
     printf "\n\t%-9s  %-40s" "20171127c" " Compare bridge tool No.11 metrology on 27th and 23rd Nov"
+    printf "\n\t%-9s  %-40s" "20171127P1" " Yiming predicted: 20171123P1 for adjusting set No.31 targetting 120um" 
+    printf "\n\t%-9s  %-40s" "20171127P2" " Yiming predicted: 20171123P2 set No.31 targetting 120um after 1st adjustion" 
 
     printf "\n\n" 
 }
@@ -47,5 +49,13 @@ case $option in
     20171127c) echo "Comparing bridge tool metrology on 20171123 and 20171127. NB: 0.0 in last column = no difference"
     diff -y ./data/set_11_laser_171123.txt ./data/set_11_laser_171127.txt | grep Z | awk '{ print $1, $2, $8 }'
     ;;
+
+    20171127P1) echo "Running on 20171127 Yiming: predicted glue thickness for adjustment set No.31"
+	./python/metroHybrid.py data/panel102_h2_20171123.TXT data/set_31_laser_171127.TXT 
+	;;
+
+    20171127P2) echo "Running on 20171127 Yiming: predicted glue thickness for adjustment set No.31"
+	./python/metroHybrid.py data/panel102_h2_20171123.TXT data/set_31_laser_171127_adjust1.TXT 
+	;;
 
 esac

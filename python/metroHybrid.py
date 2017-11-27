@@ -16,7 +16,8 @@ import math
 from scipy import optimize
 
 OFFSET = 30
-GLUE_TARGET = 80
+#GLUE_TARGET = 80
+GLUE_TARGET = 120
 GLUE_TARGET += OFFSET
 ASIC_THICKNESS = 300
 MICRONS_PER_TURN = 254                  # thread of screw in terms of microns per full turn
