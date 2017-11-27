@@ -4,8 +4,9 @@
 """
 Hybrid Metrology for ATLAS ITk
 
-Reference Craig's Code just remove python ROOT, and it has more demand of
-Metrology
+Reference Craig's Code just remove python ROOT, 
+and it has more demand of Metrology
+
 """
 
 __author__ = "Liejian Chen <chenlj@ihep.ac.cn>"
@@ -14,23 +15,45 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 from scipy import optimize
+import argparse
 
-OFFSET = 30
-#GLUE_TARGET = 80
-GLUE_TARGET = 120
-GLUE_TARGET += OFFSET
+
+parser = argparse.ArgumentParser(description='Hybrid Metrology for ATLAS ITk')
+parser.add_argument('--offset', 
+                    action='store', 
+                    dest='offset',
+                    default=30, 
+                    type=int, 
+                    help='offset of bridge tool in [um]')
+
+parser.add_argument('--glue_target', 
+                    action='store', 
+                    dest='glue_target',
+                    default=80,
+                    type=int, 
+                    help='target of glue height in [um]')
+
+parser.add_argument('files', nargs='+',
+                    help='input files list')
+
+ARGS = parser.parse_args()
+
 ASIC_THICKNESS = 300
-MICRONS_PER_TURN = 254                  # thread of screw in terms of microns per full turn
+MICRONS_PER_TURN = 254   # thread of screw in terms of microns per full turn
+
+
 
 def main():
     args = sys.argv[1:]
-    if len(args) == 0:
+    
+
+    if len(args) < 2:
         return usage()
-    elif len(args) == 1:
-        return usage()
-    elif len(args) ==2:
-        inputfileHybrid = args[0]
-        inputfileBridge = args[1]
+
+    if len(ARGS.files) ==2:
+        inputfileHybrid = ARGS.files[0]
+        inputfileBridge = ARGS.files[1]
+
         hybrid_heights = calculate_hybrid_heights(inputfileHybrid, "ZD")
         # calculate bridgetool value
         if len(hybrid_heights) == 0:
@@ -40,7 +63,12 @@ def main():
         glueb,gluef,bridgeb,bridgef = run_correction(
             bridgetool_pin_points, bridgetool_pad_points, hybrid_heights)
         plot_hybrid_glue_thickness(glueb,gluef,bridgeb,bridgef)
-    elif len(args) == 3:
+        return 
+
+
+    if len(ARGS.files) == 3:
+        raise NameError('Not ready for 3 files!')
+        
         inputfileHybrid = args[0]
         inputfileHybrid_withASICs = args[1]
         inputfileBridge = args[2]
@@ -53,8 +81,7 @@ def main():
             hybrid_heights_withASICs = calculate_hybrid_heights(inputfileHybrid_withASICs, "Z")
 
         measured_glue_thickness = calculate_measured_glue_thickness(
-                                                                    hybrid_heights,
-                                                                    hybrid_heights_withASICs)
+            hybrid_heights, hybrid_heights_withASICs)
 
         bridgetool_pin_points,bridgetool_pad_points,zd= bridgetool_value(inputfileBridge)
         glueb,gluef,bridgeb,bridgef = run_correction(
@@ -62,25 +89,11 @@ def main():
 
         plot_glue_thickness(measured_glue_thickness, gluef)
 
+
 def usage():
     sys.stdout.write('''
-NAME
-    metroHybrid.py
-
-SYNOPSIS
-    ./metroHybrid.py inputHybridData.txt inputBridgeToolData.txt
-    ./metroHybrid.py inputHybridData.txt inputfileHybrid_withASICs.txt inputBridgeToolData.txt
-
-
-EXAMPLES
-    ./metroHybrid.py example/panel_102_170808_h0.txt example/set_11_laser_20171114.txt
-    ./metroHybrid.py ../data/panel102_h2_20171123.txt ../data/panel102_h2_20171123_withASICs.TXT ../data/set_11_laser_171123.TXT
-
-AUTHOR
-    Liejian <chenlj@ihep.ac.cn>. Reference Craig's ROOT based Code.
-
-DATE
-    September 2017
+please type -h for help:  
+    metroHybrid.py -h 
 \n''')
 
 
@@ -145,7 +158,9 @@ def derive_plane_correction(points,param):
         return corrections
 
 def hybrid_corrections(glue_thickness):
-    thickness_corrections = np.mean(GLUE_TARGET-glue_thickness)
+    target = ARGS.glue_target + ARGS.offset 
+    sys.stdout.write('Target = %s, Offset = %s\n' %(ARGS.glue_target, ARGS.offset))
+    thickness_corrections = np.mean(target-glue_thickness)
     return thickness_corrections
 
 def calculate_hybrid_heights(file_name, zoption):
