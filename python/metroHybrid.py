@@ -33,23 +33,38 @@ parser.add_argument('--glue_target',
                     type=int, 
                     help='target of glue height in [um]')
 
+
+parser.add_argument('--asic_thickness', 
+                    action='store', 
+                    dest='asic_thickness',
+                    default=300,
+                    type=int, 
+                    help='ASIC thickness in [um]')
+
+
+
 parser.add_argument('files', nargs='+',
                     help='input files list')
 
 ARGS = parser.parse_args()
 
-ASIC_THICKNESS = 300
-MICRONS_PER_TURN = 254   # thread of screw in terms of microns per full turn
 
+MICRONS_PER_TURN = 254   # thread of screw in terms of microns per full turn
 
 
 def main():
     args = sys.argv[1:]
     
 
-    if len(args) < 2:
+    if len(args) < 1:
         return usage()
 
+    if len(ARGS.files) == 1:
+        inputfile = ARGS.files[0]
+        sys.stdout.write('ASCI_THICKNESS: %s um\n' % ARGS.asic_thickness)
+        return plot_hybrid_glue_thickness(inputfile)
+
+        
     if len(ARGS.files) ==2:
         inputfileHybrid = ARGS.files[0]
         inputfileBridge = ARGS.files[1]
@@ -181,11 +196,11 @@ def calculate_hybrid_heights(file_name, zoption):
     return hybrid_heights
 
 def calculate_measured_glue_thickness(hybrid_heights, hybrid_heights_withASIC):
-    glue_thickness = hybrid_heights + hybrid_heights_withASIC - ASIC_THICKNESS
+    glue_thickness = hybrid_heights + hybrid_heights_withASIC - ARGS.asic_thickness
     return glue_thickness
 
 def calculate_glue_thickness(bridge_heights, hybrid_heights, name):
-    glue_thickness = bridge_heights + hybrid_heights - ASIC_THICKNESS
+    glue_thickness = bridge_heights + hybrid_heights - ARGS.asic_thickness
     print_glue_thickness(glue_thickness, name)
     return glue_thickness
 
@@ -345,6 +360,43 @@ def plot_glue_thickness(glue_thickness_measured,glue_thickness_predicted):
     fig.show()
     raw_input('Please press enter here to close:')
 
+
+def plot_hybrid_glue_thickness(filename): 
+    zd = readHybridWithASICs(filename)
+    glue_thickness = [h*1000-ARGS.asic_thickness for h in zd ]#
+    print(glue_thickness)
+    fig=plt.figure()
+    plt.plot(glue_thickness)
+    plt.ylabel('glue thickness [um]')
+    fig.show()
+    raw_input('Please press enter here to close:')
+
+    
+def readHybridWithASICs(filename):
+    with open(filename) as f:
+        data = f.readlines()
+    f.close()
+
+    z_pos = []
+    z_d = []
+    z_d.append(0) # Datum plane, no distance
+    nlines = len(data)
+    for line in range(nlines):
+        value = data[line].split()
+        if value[0]=='Z':
+            #print(value[3])
+            z_pos.append(float(value[3]))  # z position
+        elif value[0]=='ZD':
+            #print(value[3])
+            z_d.append(float(value[3])) # z distance
+
+    results = zip(z_pos,z_d)
+    results = zip(*results)
+
+    zd = z_d[1:11]
+    return zd
+
+    
 if __name__ == '__main__':
     main()
 
