@@ -16,7 +16,8 @@ usage() {
     printf "\n\t%-9s  %-40s" "20171127c" "Compare bridge tool No.11 metrology on 27th and 23rd Nov"
     printf "\n\t%-9s  %-40s" "20171127P1" "Yiming predicted: 20171123P1 for adjusting set No.31 targetting 120um" 
     printf "\n\t%-9s  %-40s" "20171127P2" "Yiming predicted: 20171123P2 set No.31 targetting 120um after 1st adjustion" 
-    printf "\n\t%-9s  %-40s" "20171128" "Xin: dummy hybrid with patterned ASICs" 
+    printf "\n\t%-9s  %-40s" "20171128D" "Xin: dummy hybrid with patterned ASICs" 
+    printf "\n\t%-9s  %-40s" "20171128M" "Yiming: IHEP_TM1 module" 
 
     printf "\n\n" 
 }
@@ -59,8 +60,12 @@ case $option in
 		./python/metroHybrid.py --glue_target 120 data/panel102_h2_20171123.TXT data/set_31_laser_171127_adjust1.TXT 
 		;;
 
-    20171128) echo "dummy hybrid with patterned ASICs" 
+    20171128D) echo "dummy hybrid with patterned ASICs" 
 	      ./python/metroHybrid.py --asic_thickness 270 data/panelVII_20171128_h2_withPatternASIC_v2.TXT
+	      ;;
+
+    20171128M) echo "IHEP TM1 module" 
+	      ./python/sketchModule.py data/module_IHEP_TM1_20171128.TXT
 	      ;;
 
     
