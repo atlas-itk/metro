@@ -6,20 +6,44 @@ Module Metrology for ATLAS ITk
 
 __author__ = "Craig Sawyer <craig.sawyer@stfc.ac.uk>"
 
-import ROOT, math
-from array import *
+import ROOT
+import math
+import array
 import sys
+import os 
 
-# GET FILE NAME FROM USER
-user_input = raw_input("Enter module name (eg. RAL_TM1): ")
+def get_common_name(fname):
+    common = os.path.splitext(fname)[0]
+    return common 
 
+def set_file(comname, ext): 
+    extfile = comname + '.' + ext
+    return extfile
+
+
+args = sys.argv[1:]
+
+if len(args) < 1:  
+    # GET FILE NAME FROM USER
+    user_input = raw_input("Enter module name (eg. RAL_TM1): ")
+    fname = user_input+"_Metrology.txt"		# NAME OF METROLOGY OUTPUT FILE
+    figfile = "module_"+user_input+".png"
+    cvsfile = "results_"+user_input+".csv"
+    
+elif len(args) == 1:
+    fname = args[0]  
+    user_input = get_common_name(fname)
+    figfile = set_file(user_input, 'pdf')
+    cvsfile = set_file(user_input, 'cvs')
+    
+else:
+    raise NameError('Not supported args!')
 
 # RUNNING PARAMETERS
-fname = user_input+"_Metrology.txt"		# NAME OF METROLOGY OUTPUT FILE
-
+#fname = user_input+"_Metrology.txt"	# NAME OF METROLOGY OUTPUT FILE
 hybridThickness = 0.250			# ASSUMED HYBRID THICKNESS
-LH_present = 1					# WHETHER LH HYBRID IS PRESENT
-RH_present = 1					# WHETHER RH HYBRID IS PRESENT
+LH_present = 1				# WHETHER LH HYBRID IS PRESENT
+RH_present = 1				# WHETHER RH HYBRID IS PRESENT
 
 # OPEN FILE
 f = open(fname)
@@ -119,7 +143,7 @@ if RH_present:
 		smalltext.DrawLatex(x_m[p]+1.5,y_m[p]+y_m[0]-1,str(z_m[p]-hybridThickness))
 		
 	# MAKE GRAPH OF X-Y POINTS ON RH HYBRIDS
-	g_RH = ROOT.TGraph(len(x_RH),array('f',x_RH),array('f',y_RH))
+	g_RH = ROOT.TGraph(len(x_RH),array.array('f',x_RH),array.array('f',y_RH))
 	g_RH.SetMarkerStyle(29)
 	g_RH.Draw("psame")
 
@@ -133,16 +157,17 @@ if LH_present:
 		smalltext.DrawLatex(97.54-x_m[p]+1.5,97.54-y_m[2]-y_m[p]-1,str(z_m[p]-hybridThickness))
 		
 	# MAKE GRAPH OF X-Y POINTS ON LH HYBRIDS
-	g_LH = ROOT.TGraph(len(x_LH),array('f',x_LH),array('f',y_LH))
+	g_LH = ROOT.TGraph(len(x_LH),array.array('f',x_LH),array.array('f',y_LH))
 	g_LH.SetMarkerStyle(29)
 	g_LH.Draw("psame")
 
 #c1.Print("module_"+user_input+".png")
-c1.Print("module_"+user_input+".pdf")
+c1.Print(figfile)
 
 # OUTPUT RESULTS TO CSV FILE
 
-outfile = open("results_"+user_input+".csv","w")
+#outfile = open("results_"+user_input+".csv","w")
+outfile = open(cvsfile, "w")
 
 print >> outfile, ",LH,RH"
 print >> outfile, "Data-end,"+str(y_m[2])+","+str(y_m[0])
