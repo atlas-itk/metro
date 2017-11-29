@@ -11,6 +11,30 @@ import math
 import array
 import sys
 import os 
+import argparse
+
+
+parser = argparse.ArgumentParser(description='Module Metrology for ATLAS ITk')
+parser.add_argument('--noLH', 
+                    action='store_true', 
+                    default=False, 
+                    help='WHETHER LH HYBRID IS PRESENT')
+
+parser.add_argument('--noRH', 
+                    action='store_true', 
+                    default=False, 
+                    help='WHETHER RH HYBRID IS PRESENT')
+
+
+parser.add_argument('infile',
+                    nargs='?',
+                    type=argparse.FileType('r'),
+                    default=sys.stdin,
+                    help='input file')
+
+
+ARGS = parser.parse_args()
+
 
 def get_common_name(fname):
     common = os.path.splitext(fname)[0]
@@ -23,27 +47,29 @@ def set_file(comname, ext):
 
 args = sys.argv[1:]
 
-if len(args) < 1:  
+if ARGS.infile.name == '<stdin>':    
     # GET FILE NAME FROM USER
     user_input = raw_input("Enter module name (eg. RAL_TM1): ")
     fname = user_input+"_Metrology.txt"		# NAME OF METROLOGY OUTPUT FILE
     figfile = "module_"+user_input+".png"
     cvsfile = "results_"+user_input+".csv"
     
-elif len(args) == 1:
-    fname = args[0]  
+else:
+    fname = ARGS.infile.name
     user_input = get_common_name(fname)
     figfile = set_file(user_input, 'pdf')
     cvsfile = set_file(user_input, 'cvs')
     
-else:
-    raise NameError('Not supported args!')
 
 # RUNNING PARAMETERS
-#fname = user_input+"_Metrology.txt"	# NAME OF METROLOGY OUTPUT FILE
 hybridThickness = 0.250			# ASSUMED HYBRID THICKNESS
-LH_present = 1				# WHETHER LH HYBRID IS PRESENT
-RH_present = 1				# WHETHER RH HYBRID IS PRESENT
+LH_present = True			# WHETHER LH HYBRID IS PRESENT
+if ARGS.noLH:
+    LH_present = False
+    
+RH_present = True			# WHETHER RH HYBRID IS PRESENT
+if ARGS.noRH:
+    RH_present = False 
 
 # OPEN FILE
 f = open(fname)
@@ -69,6 +95,8 @@ elif RH_present and not LH_present:
 else:
 	print "\nERROR - I'm not a sensor metrology script!!!"
 	sys.exit()
+
+
 	
 # READ MEASUREMENT VALUES
 x_m,y_m,z_m = [],[],[]
