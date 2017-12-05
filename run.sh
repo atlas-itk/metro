@@ -19,6 +19,7 @@ usage() {
     printf "\n\t%-9s  %-40s" "20171128D" "Xin: dummy hybrid with patterned ASICs" 
     printf "\n\t%-9s  %-40s" "20171128M" "Yiming: IHEP_TM1 module" 
     #printf "\n\t%-9s  %-40s" "20171129v1" "Yiming: IHEP_ElecTM1 no vacuum" 
+    printf "\n\t%-9s  %-40s" "20171205" "Xin: IHEP_ElecTM1 module" 
 
     printf "\n\n" 
 }
@@ -72,6 +73,10 @@ case $option in
     # 20171129v1) echo "IHEP ElecTM1 no vacuum" 
     # 	      ./python/sketchModule.py --noRH data/module_IHEP_ElecTM1_20171129_v1_woVacuum.TXT
     # 	      ;;
+
+    20171205) echo "IHEP ElecTM1 module" 
+	      ./python/sketchModule.py data/module_IHEP_ElecTM1_20171205v2.TXT
+	      ;;
 
     
 esac
