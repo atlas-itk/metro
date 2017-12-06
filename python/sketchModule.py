@@ -32,6 +32,12 @@ parser.add_argument('infile',
                     default=sys.stdin,
                     help='input file')
 
+parser.add_argument('--offset', 
+                    action='store', 
+                    dest='offset',
+                    default=0.0, 
+                    type=float, 
+                    help='module offset in [mm]')
 
 ARGS = parser.parse_args()
 
@@ -40,8 +46,10 @@ def get_common_name(fname):
     common = os.path.splitext(fname)[0]
     return common 
 
-def set_file(comname, ext): 
-    extfile = comname + '.' + ext
+def set_file(comname, ext, suffix=None):
+    if suffix is not None:
+        comname = '%s_%s' % (comname, suffix) 
+    extfile = '%s.%s' % (comname, ext) 
     return extfile
 
 
@@ -57,8 +65,11 @@ if ARGS.infile.name == '<stdin>':
 else:
     fname = ARGS.infile.name
     user_input = get_common_name(fname)
-    figfile = set_file(user_input, 'pdf')
-    cvsfile = set_file(user_input, 'cvs')
+    suffix = None 
+    if ARGS.offset != 0:
+        suffix = 'offset_%s' % ARGS.offset
+    figfile = set_file(user_input, 'pdf', suffix)
+    cvsfile = set_file(user_input, 'cvs', suffix)
     
 
 # RUNNING PARAMETERS
@@ -93,8 +104,7 @@ elif RH_present and not LH_present:
 	LH_start = -1
 	RH_start = 26
 else:
-	print "\nERROR - I'm not a sensor metrology script!!!"
-	sys.exit()
+	raise NameError("\nERROR - I'm not a sensor metrology script!!!")
 
 
 	
@@ -106,7 +116,7 @@ for l in f.readlines():
 	val = float(l.split()[1])
 	if "X" in l[0]: x_m.append(val)
 	elif "Y" in l[0]: y_m.append(val)
-	elif "Z" in l[0]: z_m.append(val)
+	elif "Z" in l[0]: z_m.append(val+ARGS.offset)
 	
 # DRAW BASIC MODULE
 c1 = ROOT.TCanvas("c1","c1",600,600)
