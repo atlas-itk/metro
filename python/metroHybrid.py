@@ -82,11 +82,9 @@ def main():
 
 
     if len(ARGS.files) == 3:
-        raise NameError('Not ready for 3 files!')
-        
-        inputfileHybrid = args[0]
-        inputfileHybrid_withASICs = args[1]
-        inputfileBridge = args[2]
+        inputfileHybrid = ARGS.files[0]
+        inputfileHybrid_withASICs = ARGS.files[1]
+        inputfileBridge = ARGS.files[2]
         hybrid_heights = calculate_hybrid_heights(inputfileHybrid, "ZD")
         if len(hybrid_heights) == 0:
             hybrid_heights = calculate_hybrid_heights(inputfileHybrid, "Z")
